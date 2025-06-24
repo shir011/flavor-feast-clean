@@ -13,7 +13,6 @@ type UserContextType = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// ✅ URL del script con el parámetro path
 const SCRIPT_URL =
   'https://script.google.com/macros/s/AKfycbx3ni2QBgx9LAzRyVqdXAjAXkPNPBIAajTrHVyTwZbV0F26Q3odyre6tpkGSyToTsG--A/exec?path=/api/auth/login';
 

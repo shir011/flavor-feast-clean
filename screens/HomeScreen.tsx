@@ -73,7 +73,10 @@ const HomeScreen = () => {
       <View style={styles.recipeInfo}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.author}>Por: {item.author}</Text>
-        
+        <View style={styles.row}>
+          <Ionicons name="time-outline" size={14} />
+          <Text style={styles.time}> {item.time}</Text>
+        </View>
         <Text style={styles.rating}>{'⭐'.repeat(item.rating)}</Text>
       </View>
       <TouchableOpacity onPress={() => toggleFavorite(item)} style={styles.heartIcon}>
