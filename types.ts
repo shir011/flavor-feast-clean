@@ -23,11 +23,11 @@ export type Recipe = {
 };
 
 export type RootStackParamList = {
-  Home: undefined;
-  Favorites: undefined;
-  Profile: undefined;
-  MyRecipes: undefined;
+  Login: undefined;
+  HomeTabs: undefined; 
   RecipeDetails: { recipe: Recipe };
   RecipeForm: { recipe?: Recipe; isEdit?: boolean };
   RecipeSteps: { recipe: Recipe; isEdit?: boolean };
+  FilterScreen: undefined;
+  SortOptions: undefined;
 };

@@ -46,7 +46,7 @@ function HomeTabs() {
 
 export default function AppNavigator() {
   return (
-    <UserProvider> {/* ✅ Envolvés todo en el UserProvider */}
+    <UserProvider> 
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Login" component={LoginScreen} />

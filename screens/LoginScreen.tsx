@@ -18,20 +18,23 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
 const { login } = useUser();
 
-const handleLogin = () => {
-  const success = login(username, password);
+
+
+const handleLogin = async () => {
+  const success = await login(email, password);
   if (success) {
     navigation.navigate('HomeTabs');
   } else {
     setError('El usuario o la contraseña son incorrectos');
   }
 };
+
 
 
   return (
@@ -41,10 +44,10 @@ const handleLogin = () => {
       <Text style={styles.subtitle}>A Symphony of Tastes</Text>
 
       <TextInput
-        placeholder="Usuario"
+        placeholder="Email"
         style={[styles.input, error && styles.inputError]}
-        value={username}
-        onChangeText={setUsername}
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         placeholder="Contraseña"

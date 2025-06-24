@@ -7,7 +7,6 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -74,10 +73,7 @@ const HomeScreen = () => {
       <View style={styles.recipeInfo}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.author}>Por: {item.author}</Text>
-        <View style={styles.row}>
-          <Ionicons name="time-outline" size={14} />
-          <Text style={styles.time}> {item.time}</Text>
-        </View>
+        
         <Text style={styles.rating}>{'⭐'.repeat(item.rating)}</Text>
       </View>
       <TouchableOpacity onPress={() => toggleFavorite(item)} style={styles.heartIcon}>
@@ -91,65 +87,68 @@ const HomeScreen = () => {
   );
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.searchHeader}>
-        <Ionicons name="restaurant" size={24} style={{ marginRight: 8 }} />
-        <TextInput
-          placeholder="Buscar recetas..."
-          style={styles.searchInput}
-          value={search}
-          onChangeText={setSearch}
+    <View style={styles.container}>
+      {/* Header fijo */}
+      <View style={styles.headerContainer}>
+        <View style={styles.searchHeader}>
+          <Ionicons name="restaurant" size={24} style={{ marginRight: 8 }} />
+          <TextInput
+            placeholder="Buscar recetas..."
+            style={styles.searchInput}
+            value={search}
+            onChangeText={setSearch}
+          />
+        </View>
+
+        <Text style={styles.subheading}>Más recientes</Text>
+        <FlatList
+          data={latestThree}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.latestCard}
+              onPress={() => navigation.navigate('RecipeDetails', { recipe: item })}
+            >
+              <Image source={item.image} style={styles.latestImage} />
+              <Text style={styles.latestTitle}>{item.title}</Text>
+            </TouchableOpacity>
+          )}
+          contentContainerStyle={{ paddingHorizontal: 12 }}
         />
-      </View>
 
-      <Text style={styles.subheading}>Más recientes</Text>
-      <FlatList
-        data={latestThree}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.latestCard}
-            onPress={() => navigation.navigate('RecipeDetails', { recipe: item })}
-          >
-            <Image source={item.image} style={styles.latestImage} />
-            <Text style={styles.latestTitle}>{item.title}</Text>
+        <View style={styles.filtersHeader}>
+          <TouchableOpacity onPress={() => navigation.navigate('SortOptions')}>
+            <Text style={styles.orderText}>
+              Ordenar por <Text style={styles.bold}>{sortOrder}</Text>
+            </Text>
           </TouchableOpacity>
-        )}
-        contentContainerStyle={{ paddingHorizontal: 12 }}
-      />
-
-      <View style={styles.filtersHeader}>
-        <TouchableOpacity onPress={() => navigation.navigate('SortOptions')}>
-          <Text style={styles.orderText}>
-            Ordenar por <Text style={styles.bold}>{sortOrder}</Text>
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            console.log('🧪 intentando navegar a FilterScreen');
-            navigation.navigate('FilterScreen');
-          }}
-        >
-          <Ionicons name="filter" size={20} color="#333" />
-        </TouchableOpacity>
-
-
+          <TouchableOpacity onPress={() => navigation.navigate('FilterScreen')}>
+            <Ionicons name="filter" size={20} color="#333" />
+          </TouchableOpacity>
+        </View>
       </View>
 
+      {/* Lista con scroll vertical */}
       <FlatList
+        style={styles.list}
         data={sorted}
         keyExtractor={(item) => item.id}
         renderItem={renderRecipe}
         contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={true}
       />
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
+  headerContainer: {
+    paddingBottom: 10,
+    backgroundColor: '#fff',
+  },
   searchHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -198,6 +197,9 @@ const styles = StyleSheet.create({
   bold: {
     fontWeight: 'bold',
     color: '#000',
+  },
+  list: {
+    flex: 1, // ¡Muy importante para que ocupe el espacio restante!
   },
   listContainer: {
     paddingHorizontal: 16,
