@@ -5,6 +5,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'reac
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
+import { API_BASE_URL } from '../constants';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ForgotPassword'>;
 
@@ -20,7 +21,7 @@ const ForgotPasswordScreen = () => {
 
     try {
       const response = await fetch(
-        `https://script.google.com/macros/s/AKfycbx3ni2QBgx9LAzRyVqdXAjAXkPNPBIAajTrHVyTwZbV0F26Q3odyre6tpkGSyToTsG--A/exec?path=/api/auth/recover-password`,
+        `${API_BASE_URL}/auth/recover-password`,
         {
           method: 'POST',
           headers: {

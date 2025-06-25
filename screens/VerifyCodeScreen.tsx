@@ -11,6 +11,7 @@ import {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
+import { API_BASE_URL } from '../constants';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'VerifyCode'>;
 type RouteParams = RouteProp<RootStackParamList, 'VerifyCode'>;
@@ -44,7 +45,7 @@ const VerifyCodeScreen = () => {
 
     try {
       const response = await fetch(
-        `https://script.google.com/macros/s/AKfycbx3ni2QBgx9LAzRyVqdXAjAXkPNPBIAajTrHVyTwZbV0F26Q3odyre6tpkGSyToTsG--A/exec?path=/api/auth/verify-code`,
+        `${API_BASE_URL}/auth/verify-code`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -55,7 +56,6 @@ const VerifyCodeScreen = () => {
       const data = await response.json();
 
       if (data.status === 200) {
-        Alert.alert('Éxito', 'Código verificado. Ahora podés cambiar tu contraseña');
         navigation.navigate('ResetPassword', { email }); 
       } else {
         Alert.alert('Error', data.data || 'Código inválido');

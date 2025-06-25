@@ -10,6 +10,7 @@ import {
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
+import { API_BASE_URL } from '../constants';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type ResetPasswordRouteProp = RouteProp<RootStackParamList, 'ResetPassword'>;
@@ -17,7 +18,7 @@ type ResetPasswordRouteProp = RouteProp<RootStackParamList, 'ResetPassword'>;
 const ResetPasswordScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<ResetPasswordRouteProp>();
-  
+
   const { email } = route.params;
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -35,7 +36,7 @@ const ResetPasswordScreen = () => {
 
     try {
       const response = await fetch(
-        `https://script.google.com/macros/s/AKfycbx3ni2QBgx9LAzRyVqdXAjAXkPNPBIAajTrHVyTwZbV0F26Q3odyre6tpkGSyToTsG--A/exec?path=/api/auth/change-password`,
+        `${API_BASE_URL}/auth/change-password`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -49,8 +50,16 @@ const ResetPasswordScreen = () => {
       const data = await response.json();
 
       if (data.status === 200) {
-        Alert.alert('Contraseña actualizada', 'Tu contraseña fue restablecida correctamente');
-        navigation.navigate('Login');
+        Alert.alert(
+            'Contraseña actualizada',
+            'Tu contraseña fue restablecida correctamente',
+            [
+            {
+                text: 'OK',
+                onPress: () => navigation.navigate('Login'),
+            },
+            ]
+        );
       } else {
         Alert.alert('Error', data.message || 'No se pudo cambiar la contraseña');
       }
