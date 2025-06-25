@@ -25,6 +25,9 @@ export type Recipe = {
 export type RootStackParamList = {
   Login: undefined;
   HomeTabs: undefined; 
+  ForgotPassword: undefined;
+  VerifyCode: { email: string };
+  ResetPassword: { email: string };
   RecipeDetails: { recipe: Recipe };
   RecipeForm: { recipe?: Recipe; isEdit?: boolean };
   RecipeSteps: { recipe: Recipe; isEdit?: boolean };

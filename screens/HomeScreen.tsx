@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,8 @@ import { RootStackParamList, Recipe } from '../types';
 import { useRecipeContext } from '../context/RecipeContext';
 import { useFilterContext } from '../context/FilterContext';
 import { useSortContext } from '../context/SortContext';
+import { useUserContext } from '../context/UserContext'; 
+import { API_BASE_URL } from '../constants'; 
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'HomeTabs'>;
 
@@ -23,7 +25,37 @@ const HomeScreen = () => {
   const { recipes, toggleFavorite, isFavorite } = useRecipeContext();
   const { filters } = useFilterContext();
   const { sortOrder } = useSortContext();
+  const { user } = useUserContext(); // 👈 Obtener usuario del contexto
+
   const [search, setSearch] = useState('');
+  const [latestRecipes, setLatestRecipes] = useState<Recipe[]>([]);
+
+  useEffect(() => {
+    const fetchLatest = async () => {
+      try {
+        const url = `${API_BASE_URL}/recipes/latest`;
+        const response = await fetch(url);
+        const json = await response.json();
+        if (json.status === 200 && json.data) {
+          const adaptedData = json.data.map((item: any) => ({
+            id: String(item.idReceta),
+            title: item.nombre,
+            image: { uri: item.imagen },
+            author: item.usuario,
+            createdAt: new Date(item.fechaPublicacion).getTime(),
+            rating: 5,
+          }));
+          setLatestRecipes(adaptedData);
+        } else {
+          console.error('Error en backend:', json.message);
+        }
+      } catch (error) {
+        console.error('Error fetching latest recipes:', error);
+      }
+    };
+
+    fetchLatest();
+  }, []);
 
   const applySort = (list: Recipe[]) => {
     return [...list].sort((a, b) => {
@@ -62,7 +94,6 @@ const HomeScreen = () => {
   }, [recipes, filters, search]);
 
   const sorted = useMemo(() => applySort(filtered), [filtered, sortOrder]);
-  const latestThree = useMemo(() => applySort([...recipes]).slice(0, 3), [recipes, sortOrder]);
 
   const renderRecipe = ({ item }: { item: Recipe }) => (
     <TouchableOpacity
@@ -73,10 +104,6 @@ const HomeScreen = () => {
       <View style={styles.recipeInfo}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.author}>Por: {item.author}</Text>
-        <View style={styles.row}>
-          <Ionicons name="time-outline" size={14} />
-          <Text style={styles.time}> {item.time}</Text>
-        </View>
         <Text style={styles.rating}>{'⭐'.repeat(item.rating)}</Text>
       </View>
       <TouchableOpacity onPress={() => toggleFavorite(item)} style={styles.heartIcon}>
@@ -91,7 +118,6 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header fijo */}
       <View style={styles.headerContainer}>
         <View style={styles.searchHeader}>
           <Ionicons name="restaurant" size={24} style={{ marginRight: 8 }} />
@@ -103,19 +129,35 @@ const HomeScreen = () => {
           />
         </View>
 
-        <Text style={styles.subheading}>Más recientes</Text>
+        <Text style={styles.subheading}>Últimas Tres Recetas Cargadas: </Text>
         <FlatList
-          data={latestThree}
+          data={latestRecipes}
           horizontal
           showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, index) => item.id ?? `latest-${index}`}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.latestCard}
               onPress={() => navigation.navigate('RecipeDetails', { recipe: item })}
             >
               <Image source={item.image} style={styles.latestImage} />
-              <Text style={styles.latestTitle}>{item.title}</Text>
+              <View style={styles.latestTitle}>
+                {(() => {
+                  const words = item.title.split(' ');
+                  const mid = Math.ceil(words.length / 2);
+                  const line1 = words.slice(0, mid).join(' ');
+                  const line2 = words.slice(mid).join(' ');
+
+                  return (
+                    <>
+                      <Text style={styles.latestTitle}>{line1}</Text>
+                      {line2.length > 0 && (
+                        <Text style={styles.latestTitle}>{line2}</Text>
+                      )}
+                    </>
+                  );
+                })()}
+              </View>
             </TouchableOpacity>
           )}
           contentContainerStyle={{ paddingHorizontal: 12 }}
@@ -133,7 +175,6 @@ const HomeScreen = () => {
         </View>
       </View>
 
-      {/* Lista con scroll vertical */}
       <FlatList
         style={styles.list}
         data={sorted}
@@ -142,6 +183,18 @@ const HomeScreen = () => {
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={true}
       />
+
+      {/* ⚠️ Mensaje de inicio de sesión (solo si no hay usuario) */}
+      {!user && (
+        <View style={styles.loginBanner}>
+          <Text style={styles.loginText}>
+            ¿Todavía no tienes cuenta? <Text style={styles.bold}>¡Unete!</Text>
+          </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.loginLink}>Iniciar Sesión</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -177,14 +230,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   latestImage: {
-    width: 100,
+    width: 120,
     height: 100,
     borderRadius: 10,
   },
   latestTitle: {
-    marginTop: 4,
     fontSize: 12,
+    fontWeight: 'bold',
     textAlign: 'center',
+    lineHeight: 16,
   },
   filtersHeader: {
     flexDirection: 'row',
@@ -202,7 +256,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   list: {
-    flex: 1, // ¡Muy importante para que ocupe el espacio restante!
+    flex: 1,
   },
   listContainer: {
     paddingHorizontal: 16,
@@ -219,12 +273,30 @@ const styles = StyleSheet.create({
   },
   recipeImage: { width: 100, height: 100 },
   recipeInfo: { flex: 1, padding: 10 },
-  row: { flexDirection: 'row', alignItems: 'center' },
   title: { fontWeight: 'bold' },
   author: { fontSize: 12, color: '#555' },
-  time: { fontSize: 12, color: '#555' },
   rating: { color: '#f9a825', fontSize: 14, marginTop: 5 },
   heartIcon: { padding: 10 },
+
+  loginBanner: {
+    backgroundColor: '#fef3c7',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderTopWidth: 1,
+    borderColor: '#eee',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  loginText: {
+    fontSize: 13,
+    color: '#333',
+  },
+  loginLink: {
+    color: '#007bff',
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
 });
 
 export default HomeScreen;

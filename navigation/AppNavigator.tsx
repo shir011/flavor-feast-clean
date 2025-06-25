@@ -14,7 +14,12 @@ import RecipeFormScreen from '../screens/RecipeFormScreen';
 import RecipeStepsScreen from '../screens/RecipeStepsScreen';
 import FilterScreen from '../screens/FilterScreen';
 import SortOptionsScreen from '../screens/SortOptionsScreen';
-import { UserProvider } from '../context/UserContext'; // 👉 Importar el provider
+import { UserProvider } from '../context/UserContext'; 
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
+import VerifyCodeScreen from '../screens/VerifyCodeScreen';
+import ResetPasswordScreen from '../screens/ResetPasswordScreen';
+
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -46,16 +51,22 @@ function HomeTabs() {
 
 export default function AppNavigator() {
   return (
-    <UserProvider> 
+    <UserProvider>
       <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Navigator
+          initialRouteName="HomeTabs" // 👈 Esto define que arranque acá
+          screenOptions={{ headerShown: false }}
+        >
           <Stack.Screen name="HomeTabs" component={HomeTabs} />
+          <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="RecipeDetails" component={RecipeDetailsScreen} />
           <Stack.Screen name="RecipeForm" component={RecipeFormScreen} />
           <Stack.Screen name="RecipeSteps" component={RecipeStepsScreen} />
           <Stack.Screen name="FilterScreen" component={FilterScreen} />
           <Stack.Screen name="SortOptions" component={SortOptionsScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+          <Stack.Screen name="VerifyCode" component={VerifyCodeScreen} />
+          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </UserProvider>

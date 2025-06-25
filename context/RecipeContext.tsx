@@ -1,7 +1,9 @@
 
 // ✅ context/RecipeContext.tsx - CORREGIDO
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Recipe } from '../types';
+import { API_BASE_URL } from '../constants'; 
+
 
 export type RootStackParamList = {
   HomeTabs: undefined;
@@ -27,47 +29,56 @@ export const useRecipeContext = () => {
   return context;
 };
 
-const initialRecipes: Recipe[] = [
-  {
-    id: '1',
-    title: 'Pizza de Pepperoni',
-    author: 'Helena Rizzo',
-    time: '110 min',
-    rating: 5,
-    category: 'Pizza',
-    image: require('../assets/pizza.jpg'),
-    ingredients: [
-      { name: 'Harina', quantity: 500 },
-      { name: 'Queso', quantity: 200 },
-      { name: 'Salsa de tomate', quantity: 100 },
-    ],
-    steps: [
-      {
-        description: 'Mezclá el agua tibia con la levadura seca y el azúcar. Dejá reposar 10 minutos hasta que se forme espuma en la superficie.',
-        image: require('../assets/paso1.jpg'),
-      },
-      {
-        description: 'En un bowl grande, colocá la harina y la sal. Agregá la mezcla de levadura activada y el aceite de oliva.',
-        image: require('../assets/paso2.jpg'),
-      },
-      {
-        description: 'Formá un bollo, colocá en un bowl aceitado, cubrí con film y dejá leudar 1h o hasta que duplique su tamaño.',
-        image: require('../assets/paso3.jpg'),
-      },
-      {
-        description: 'Estirá la masa, agregá salsa, queso y pepperoni. Horneá 12-15 min hasta que esté dorada.',
-        image: require('../assets/paso4.jpg'),
-      },
-    ],
-    createdByUser: false,
-  },
-];
+//Endpoint del backend
+const API_URL = (`${API_BASE_URL}/recipes`);
+
+
 
 export const RecipeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [favorites, setFavorites] = useState<Recipe[]>([]);
 
   const myRecipes = recipes.filter((r) => r.createdByUser);
+
+    // Obtener recetas del backend
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      try {
+        const response = await fetch(API_URL);
+        const json = await response.json();
+
+        if (json.status === 200 && Array.isArray(json.data)) {
+          const mapped = json.data.map((r: any): Recipe => ({
+            id: r.idReceta,
+            title: r.nombre,
+            author: r.usuario || 'Desconocido',
+            rating: r.puntuacion || 5,
+            category: r.tipo || 'Sin categoría',
+            image: { uri: r.imagen },
+            ingredients: r.ingredientes?.map((i: any) => ({
+              name: i.nombre,
+              quantity: i.cantidad,
+              unit: i.unidad,
+            })) || [],
+            steps: r.pasos?.map((p: any) => ({
+              description: p.descripcion,
+              image: p.multimedia ? { uri: p.multimedia } : null,
+            })) || [],
+            createdByUser: false,
+            createdAt: r.fechaCreacion ? new Date(r.fechaCreacion).getTime() : Date.now(),
+          }));
+
+          setRecipes(mapped);
+        } else {
+          console.error('Error al cargar recetas:', json.message);
+        }
+      } catch (error) {
+        console.error('Error al conectar con el backend:', error);
+      }
+    };
+
+    fetchRecipes();
+  }, []);
 
   const addRecipe = (recipe: Recipe) => {
     setRecipes((prev) => [...prev, { ...recipe, createdByUser: true }]);

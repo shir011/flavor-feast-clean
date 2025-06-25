@@ -1,12 +1,37 @@
-// Ruta: screens/ProfileScreen.tsx
-
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useUser } from '../context/UserContext';
+import { useNavigation, CommonActions } from '@react-navigation/native';
+
 const ProfileScreen = () => {
-  // ⚠️ En el futuro esto vendrá del contexto o del login
-  const { user } = useUser();
+  const { user, logout } = useUser();
+  const navigation = useNavigation();
+
   if (!user) return null;
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Cerrar sesión',
+      '¿Estás seguro que querés cerrar sesión?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Cerrar sesión',
+          style: 'destructive',
+          onPress: () => {
+            logout();
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+              })
+            );
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Image
@@ -29,6 +54,10 @@ const ProfileScreen = () => {
         <Text style={styles.label}>Contraseña</Text>
         <Text style={styles.value}>********</Text>
       </View>
+
+      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Cerrar sesión</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -72,6 +101,18 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 16,
     color: '#000',
+  },
+  logoutBtn: {
+    marginTop: 40,
+    backgroundColor: '#B59A51',
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 

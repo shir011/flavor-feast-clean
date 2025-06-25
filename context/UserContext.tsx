@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { API_BASE_URL } from '../constants';
 
 type User = {
   username: string;
@@ -13,15 +14,22 @@ type UserContextType = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const SCRIPT_URL =
-  'https://script.google.com/macros/s/AKfycbx3ni2QBgx9LAzRyVqdXAjAXkPNPBIAajTrHVyTwZbV0F26Q3odyre6tpkGSyToTsG--A/exec?path=/api/auth/login';
+const API_URL = (`${API_BASE_URL}/auth/login`);
+
+export const useUserContext = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error('useUserContext debe usarse dentro de un UserProvider');
+  }
+  return context;
+};
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User>(null);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch(SCRIPT_URL, {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
